@@ -631,18 +631,51 @@
     
     // FIX 2: Determine if products should be shown
     shouldShowProducts(userMessage, botResponse) {
-      const showTriggers = ['vis', 'find', 'søg', 'hvilke', 'hvad har', 'anbefal', 'forslag'];
-      const hideTriggers = ['levering', 'retur', 'betaling', 'hjælp', 'hvordan', 'hvornår'];
+      const showTriggers = [
+        // Direkte anmodninger
+        'vis', 'vise', 'se', 'find', 'finde', 'søg', 'søge', 'søger',
+        'hvilke', 'hvad har', 'kan du anbefale', 'anbefal', 'anbefalinger',
+        'forslag', 'muligheder', 'alternativer', 'lignende', 'andre',
+        'giv mig', 'jeg vil gerne', 'jeg søger', 'jeg leder',
+        'produkter', 'varer', 'udvalg', 'sortiment',
+        
+        // Shopping intent
+        'køb', 'købe', 'bestil', 'bestille', 'shop', 'shoppe',
+        'pris', 'priser', 'hvad koster', 'tilbud', 'udsalg'
+      ];
+      
+      const hideTriggers = [
+        'levering', 'leveringstid', 'forsendelse', 'fragt',
+        'retur', 'returnere', 'bytte', 'garanti',
+        'betaling', 'betale', 'faktura', 'ordre',
+        'hjælp', 'hvordan', 'hvornår', 'support',
+        'kontakt', 'telefon', 'email', 'åbningstider'
+      ];
       
       const lowerMessage = userMessage.toLowerCase();
       const lowerResponse = botResponse.toLowerCase();
       
-      // Check user message
+      // Check user message for show triggers
       if (showTriggers.some(t => lowerMessage.includes(t))) return true;
+      
+      // Check for hide triggers
       if (hideTriggers.some(t => lowerMessage.includes(t))) return false;
       
-      // Check bot response
-      if (lowerResponse.includes('her er') || lowerResponse.includes('jeg har fundet')) return true;
+      // Check bot response for product indicators
+      const botProductIndicators = [
+        'her er', 'jeg har fundet', 'jeg fandt', 'disse produkter',
+        'følgende produkter', 'kan anbefale', 'se disse', 'tjek disse',
+        'populære', 'bestseller', 'kunderne elsker', 'top valg'
+      ];
+      
+      if (botProductIndicators.some(indicator => lowerResponse.includes(indicator))) {
+        return true;
+      }
+      
+      // If message is very short and not a question, might be product search
+      if (lowerMessage.length < 30 && !lowerMessage.includes('?')) {
+        return true;
+      }
       
       return false;
     },
