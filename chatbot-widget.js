@@ -18,7 +18,25 @@
       box-shadow: 0 8px 32px rgba(249, 75, 0, 0.3);
       transition: all 0.3s ease;
       z-index: 9999;
+    /* Attention message animation */
+  @keyframes slideInBounce {
+    0% {
+      opacity: 0;
+      transform: translateY(20px) scale(0.9);
     }
+    60% {
+      transform: translateY(-5px) scale(1.02);
+    }
+    100% {
+      opacity: 1;
+      transform: translateY(0) scale(1);
+    }
+  }
+  
+  @keyframes fadeOut {
+    from { opacity: 1; }
+    to { opacity: 0; }
+  }
     
     #br-chat-button:hover {
       transform: scale(1.1);
@@ -433,8 +451,7 @@
           method: 'POST',
           headers: {
             'Content-Type': 'application/json',
-            'Authorization': 'Bearer 
-eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imttb2xwdXhibm9ubmdnd3BocnhzIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDk5MDM4NjAsImV4cCI6MjA2NTQ3OTg2MH0.SMdQKI_ISIWb89WRJ79k1jB9OvjEXVgnLJKaoKkAUCg'
+            'Authorization': 'Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imttb2xwdXhibm9ubmdnd3BocnhzIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDk5MDM4NjAsImV4cCI6MjA2NTQ3OTg2MH0.SMdQKI_ISIWb89WRJ79k1jB9OvjEXVgnLJKaoKkAUCg'
           },
           body: JSON.stringify({ is_opening_request: true })
         });
@@ -469,8 +486,7 @@ eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imttb2xwdXh
           method: 'POST',
           headers: {
             'Content-Type': 'application/json',
-            'Authorization': 'Bearer 
-eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imttb2xwdXhibm9ubmdnd3BocnhzIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDk5MDM4NjAsImV4cCI6MjA2NTQ3OTg2MH0.SMdQKI_ISIWb89WRJ79k1jB9OvjEXVgnLJKaoKkAUCg'
+            'Authorization': 'Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imttb2xwdXhibm9ubmdnd3BocnhzIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDk5MDM4NjAsImV4cCI6MjA2NTQ3OTg2MH0.SMdQKI_ISIWb89WRJ79k1jB9OvjEXVgnLJKaoKkAUCg'
           },
           body: JSON.stringify({
             message: message,
