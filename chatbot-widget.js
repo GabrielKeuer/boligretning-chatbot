@@ -1,4 +1,4 @@
-// BoligRetning Chatbot Widget - Clean Version
+// BoligRetning Chatbot Widget - Simplified Version
 (function() {
   // Inject styles
   const styles = `
@@ -106,6 +106,19 @@
       box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05);
     }
     
+    /* Styling for links in bot messages */
+    .br-bot-message .br-bubble a {
+      color: #f94b00;
+      font-weight: 600;
+      text-decoration: none;
+      border-bottom: 1px solid transparent;
+      transition: border-color 0.2s ease;
+    }
+    
+    .br-bot-message .br-bubble a:hover {
+      border-bottom-color: #f94b00;
+    }
+    
     /* Mindre tekst på desktop */
     @media (min-width: 768px) {
       .br-bubble {
@@ -181,112 +194,6 @@
     @keyframes bounce {
       0%, 80%, 100% { transform: scale(0); }
       40% { transform: scale(1); }
-    }
-    
-    /* Produkt karrusel styles */
-    .br-product-carousel {
-      margin: 10px 0;
-      overflow-x: auto;
-      scroll-snap-type: x mandatory;
-      display: flex;
-      gap: 10px;
-      padding: 10px 0;
-      -webkit-overflow-scrolling: touch;
-    }
-    
-    .br-product-carousel::-webkit-scrollbar {
-      height: 6px;
-    }
-    
-    .br-product-carousel::-webkit-scrollbar-track {
-      background: rgba(0, 0, 0, 0.05);
-      border-radius: 3px;
-    }
-    
-    .br-product-carousel::-webkit-scrollbar-thumb {
-      background: #f94b00;
-      border-radius: 3px;
-    }
-    
-    .br-product-card {
-      flex: 0 0 200px;
-      background: white;
-      border-radius: 12px;
-      padding: 12px;
-      scroll-snap-align: start;
-      cursor: pointer;
-      transition: all 0.3s ease;
-      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
-      border: 1px solid rgba(0, 0, 0, 0.05);
-    }
-    
-    .br-product-card:hover {
-      transform: translateY(-3px);
-      box-shadow: 0 4px 16px rgba(0, 0, 0, 0.15);
-    }
-    
-    .br-product-image {
-      width: 100%;
-      height: 150px;
-      object-fit: cover;
-      border-radius: 8px;
-      margin-bottom: 10px;
-    }
-    
-    .br-product-skeleton {
-      width: 100%;
-      height: 150px;
-      background: linear-gradient(90deg, #f0f0f0 25%, #e0e0e0 50%, #f0f0f0 75%);
-      background-size: 200% 100%;
-      animation: loading 1.5s infinite;
-      border-radius: 8px;
-      margin-bottom: 10px;
-    }
-    
-    @keyframes loading {
-      0% { background-position: 200% 0; }
-      100% { background-position: -200% 0; }
-    }
-    
-    .br-product-title {
-      font-size: 14px;
-      font-weight: 600;
-      color: #242833;
-      margin-bottom: 5px;
-      line-height: 1.3;
-      max-height: 2.6em;
-      overflow: hidden;
-    }
-    
-    .br-product-price {
-      font-size: 16px;
-      color: #f94b00;
-      font-weight: bold;
-    }
-    
-    .br-product-compare-price {
-      font-size: 14px;
-      color: #999;
-      text-decoration: line-through;
-    }
-    
-    .br-view-btn {
-      display: block;
-      width: 100%;
-      padding: 8px;
-      margin-top: 10px;
-      background: #f94b00;
-      color: white;
-      border: none;
-      border-radius: 6px;
-      font-size: 14px;
-      font-weight: 600;
-      cursor: pointer;
-      transition: all 0.2s ease;
-    }
-    
-    .br-view-btn:hover {
-      background: #e04000;
     }
     
     /* Attention message styling */
@@ -382,17 +289,6 @@
   chatContainer.innerHTML = chatHTML;
   document.body.appendChild(chatContainer);
 
-  // Shopify product fetch function
-  window.fetchProductByHandle = async function(handle) {
-    try {
-      const response = await fetch(`/products/${handle}.js`);
-      return await response.json();
-    } catch (e) {
-      console.error('Failed to fetch product:', handle);
-      return null;
-    }
-  }
-
   // Chat functionality
   const brChat = {
     sessionId: null,
@@ -423,7 +319,7 @@
         }, 500);
       }
       
-      // FIX 1: Show attention message after 10 seconds
+      // Show attention message after 10 seconds
       if (!this.wasOpen && this.conversationHistory.length === 0) {
         setTimeout(() => {
           this.showAttentionMessage();
@@ -461,7 +357,6 @@
       messagesDiv.innerHTML = '';
       
       this.conversationHistory.forEach((msg, index) => {
-        // Skip genindlæsning af produkter - de blev allerede vist
         if (msg.role === 'user') {
           this.addMessage(msg.content, 'user', false);
         } else {
@@ -470,7 +365,7 @@
       });
     },
     
-    // FIX 1: Show attention-grabbing message
+    // Show attention-grabbing message
     showAttentionMessage() {
       const attentionDiv = document.createElement('div');
       attentionDiv.id = 'br-attention-message';
@@ -575,7 +470,7 @@
       this.showTyping();
       
       try {
-        // FIX 3: Build search context from conversation history
+        // Build search context from conversation history
         const searchContext = this.buildSearchContext(message);
         
         const response = await fetch('https://kmolpuxbnonnggwphrxs.supabase.co/functions/v1/chatbot', {
@@ -597,11 +492,16 @@
         
         this.hideTyping();
         
-        // FIX 2: Only show products when relevant
-        const shouldShowProducts = this.shouldShowProducts(message, data.response);
-        const productsToShow = shouldShowProducts ? (data.products || []) : [];
+        // Process the response to convert markdown links to HTML
+        let processedResponse = data.response || 'Beklager, jeg forstod ikke det. Kan du prøve igen?';
         
-        this.addMessage(data.response || 'Beklager, jeg forstod ikke det. Kan du prøve igen?', 'bot', true, productsToShow);
+        // Convert markdown links to HTML links
+        processedResponse = processedResponse.replace(
+          /\[([^\]]+)\]\(([^)]+)\)/g,
+          '<a href="$2" target="_blank">$1</a>'
+        );
+        
+        this.addMessage(processedResponse, 'bot', true);
         
       } catch (error) {
         console.error('Chat error:', error);
@@ -610,7 +510,7 @@
       }
     },
     
-    // FIX 3: Build search context from conversation
+    // Build search context from conversation
     buildSearchContext(currentMessage) {
       const recentContext = [];
       
@@ -629,117 +529,31 @@
       return recentContext.slice(-3).join(' ');
     },
     
-    // FIX 2: Determine if products should be shown
-    shouldShowProducts(userMessage, botResponse) {
-      const showTriggers = [
-        // Direkte anmodninger
-        'vis', 'vise', 'se', 'find', 'finde', 'søg', 'søge', 'søger',
-        'hvilke', 'hvad har', 'kan du anbefale', 'anbefal', 'anbefalinger',
-        'forslag', 'muligheder', 'alternativer', 'lignende', 'andre',
-        'giv mig', 'jeg vil gerne', 'jeg søger', 'jeg leder',
-        'produkter', 'varer', 'udvalg', 'sortiment',
-        
-        // Shopping intent
-        'køb', 'købe', 'bestil', 'bestille', 'shop', 'shoppe',
-        'pris', 'priser', 'hvad koster', 'tilbud', 'udsalg'
-      ];
-      
-      const hideTriggers = [
-        'levering', 'leveringstid', 'forsendelse', 'fragt',
-        'retur', 'returnere', 'bytte', 'garanti',
-        'betaling', 'betale', 'faktura', 'ordre',
-        'hjælp', 'hvordan', 'hvornår', 'support',
-        'kontakt', 'telefon', 'email', 'åbningstider'
-      ];
-      
-      const lowerMessage = userMessage.toLowerCase();
-      const lowerResponse = botResponse.toLowerCase();
-      
-      // Check user message for show triggers
-      if (showTriggers.some(t => lowerMessage.includes(t))) return true;
-      
-      // Check for hide triggers
-      if (hideTriggers.some(t => lowerMessage.includes(t))) return false;
-      
-      // Check bot response for product indicators
-      const botProductIndicators = [
-        'her er', 'jeg har fundet', 'jeg fandt', 'disse produkter',
-        'følgende produkter', 'kan anbefale', 'se disse', 'tjek disse',
-        'populære', 'bestseller', 'kunderne elsker', 'top valg'
-      ];
-      
-      if (botProductIndicators.some(indicator => lowerResponse.includes(indicator))) {
-        return true;
-      }
-      
-      // If message is very short and not a question, might be product search
-      if (lowerMessage.length < 30 && !lowerMessage.includes('?')) {
-        return true;
-      }
-      
-      return false;
-    },
-    
-    addMessage(text, sender, saveToHistory = true, products = []) {
+    addMessage(text, sender, saveToHistory = true) {
       const messagesDiv = document.getElementById('br-messages');
       const messageDiv = document.createElement('div');
       messageDiv.className = `br-message br-${sender}-message`;
       
-      messageDiv.innerHTML = `<div class="br-bubble">${text}</div>`;
-      
-      // Hvis der er produkter, tilføj karrusel
-      if (sender === 'bot' && products && products.length > 0) {
-        const carouselDiv = document.createElement('div');
-        carouselDiv.className = 'br-product-carousel';
-        
-        // Tilføj produkt cards med skeleton loading
-        products.forEach(async (product, index) => {
-          const productCard = document.createElement('div');
-          productCard.className = 'br-product-card';
-          productCard.setAttribute('data-product-id', product.id);
-          
-          // Vis skeleton først
-          productCard.innerHTML = `
-            <div class="br-product-skeleton"></div>
-            <div class="br-product-title">${product.title}</div>
-            <div class="br-product-price">Henter pris...</div>
-          `;
-          carouselDiv.appendChild(productCard);
-          
-          // Hent Shopify data
-          const shopifyData = await window.fetchProductByHandle(product.handle);
-          
-          if (shopifyData && shopifyData.available) {
-            // Produkt findes og er tilgængeligt
-            const price = (shopifyData.price / 100).toFixed(0);
-            const comparePrice = shopifyData.compare_at_price ? (shopifyData.compare_at_price / 100).toFixed(0) : null;
-            
-            productCard.innerHTML = `
-              <img src="${shopifyData.featured_image}" alt="${product.title}" class="br-product-image" onerror="this.src='https://via.placeholder.com/200x150?text=Billede+kommer'">
-              <div class="br-product-title">${product.title}</div>
-              <div class="br-product-price">${price} kr</div>
-              ${comparePrice ? `<div class="br-product-compare-price">${comparePrice} kr</div>` : ''}
-              <button class="br-view-btn" onclick="window.location.href='/products/${product.handle}'">
-                Se produkt
-              </button>
-            `;
-          } else {
-            // Produkt findes ikke eller er udsolgt - fjern det
-            productCard.remove();
-          }
-        });
-        
-        messageDiv.appendChild(carouselDiv);
+      // For bot messages, allow HTML (for links)
+      if (sender === 'bot') {
+        messageDiv.innerHTML = `<div class="br-bubble">${text}</div>`;
+      } else {
+        // For user messages, escape HTML
+        const escapedText = text.replace(/</g, '&lt;').replace(/>/g, '&gt;');
+        messageDiv.innerHTML = `<div class="br-bubble">${escapedText}</div>`;
       }
       
       messagesDiv.appendChild(messageDiv);
       messagesDiv.scrollTop = messagesDiv.scrollHeight;
       
-      // Gem kun til historik hvis det er nyt
+      // Save to history if new
       if (saveToHistory) {
+        // Store the original text without HTML processing for history
+        const originalText = text.replace(/<a[^>]*href="([^"]*)"[^>]*>([^<]*)<\/a>/g, '[$2]($1)');
+        
         this.conversationHistory.push({
           role: sender === 'user' ? 'user' : 'assistant',
-          content: text
+          content: originalText
         });
         localStorage.setItem('br_conversation_history', JSON.stringify(this.conversationHistory));
       }
@@ -758,31 +572,6 @@
     hideTyping() {
       const typing = document.getElementById('br-typing');
       if (typing) typing.remove();
-    },
-    
-    trackProductClick(url) {
-      console.log('Product clicked:', url);
-      // Her kan du senere tilføje tracking til analytics
-    },
-    
-    async sendFeedback(score) {
-      if (!this.interactionId) return;
-      
-      try {
-        await fetch('https://kmolpuxbnonnggwphrxs.supabase.co/functions/v1/chatbot', {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-            'Authorization': 'Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imttb2xwdXhibm9ubmdnd3BocnhzIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDk5MDM4NjAsImV4cCI6MjA2NTQ3OTg2MH0.SMdQKI_ISIWb89WRJ79k1jB9OvjEXVgnLJKaoKkAUCg'
-          },
-          body: JSON.stringify({
-            feedback: score,
-            interaction_id: this.interactionId
-          })
-        });
-      } catch (error) {
-        console.error('Feedback error:', error);
-      }
     },
     
     resetConversation() {
