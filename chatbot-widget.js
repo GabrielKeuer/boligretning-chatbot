@@ -408,16 +408,33 @@
     conversationHistory: [],
     wasOpen: false,
     
+    // 24-hour session expiry: All chat data is automatically cleared after 24 hours of inactivity
+    // This includes conversation history, session ID, and any stored state
+    // Last activity is updated on: init, open chat, send message
+    
     init() {
       document.getElementById('br-chat-button').onclick = () => this.toggle();
       document.getElementById('br-close').onclick = () => this.close();
       
-      // Get existing session and conversation history
-      this.sessionId = localStorage.getItem('br_session_id');
-      const savedHistory = localStorage.getItem('br_conversation_history');
-      if (savedHistory) {
-        this.conversationHistory = JSON.parse(savedHistory);
+      // Check if session is expired (24 hours)
+      const lastActivity = localStorage.getItem('br_last_activity');
+      const twentyFourHoursAgo = Date.now() - (24 * 60 * 60 * 1000);
+      
+      if (lastActivity && parseInt(lastActivity) < twentyFourHoursAgo) {
+        // Session expired - clear everything
+        this.resetConversation();
+        console.log('Chat session expired after 24 hours');
+      } else {
+        // Get existing session and conversation history
+        this.sessionId = localStorage.getItem('br_session_id');
+        const savedHistory = localStorage.getItem('br_conversation_history');
+        if (savedHistory) {
+          this.conversationHistory = JSON.parse(savedHistory);
+        }
       }
+      
+      // Update last activity
+      this.updateLastActivity();
       
       // Check om chatten var åben før navigation
       this.wasOpen = localStorage.getItem('br_chat_open') === 'true';
@@ -437,6 +454,23 @@
           this.showAttentionMessage();
         }, 10000);
       }
+      
+      // Check for expiry every hour
+      setInterval(() => {
+        const lastActivity = localStorage.getItem('br_last_activity');
+        const twentyFourHoursAgo = Date.now() - (24 * 60 * 60 * 1000);
+        
+        if (lastActivity && parseInt(lastActivity) < twentyFourHoursAgo) {
+          this.resetConversation();
+          if (document.getElementById('br-chat-window').style.display === 'flex') {
+            this.addMessage('Din session er udløbet efter 24 timer. Lad os starte forfra! 😊', 'bot');
+          }
+        }
+      }, 60 * 60 * 1000); // Check every hour
+    },
+    
+    updateLastActivity() {
+      localStorage.setItem('br_last_activity', Date.now().toString());
     },
     
     toggle() {
@@ -449,9 +483,21 @@
     },
     
     open() {
+      // Check if session expired before opening
+      const lastActivity = localStorage.getItem('br_last_activity');
+      const twentyFourHoursAgo = Date.now() - (24 * 60 * 60 * 1000);
+      
+      if (lastActivity && parseInt(lastActivity) < twentyFourHoursAgo) {
+        // Session expired - reset before opening
+        this.resetConversation();
+      }
+      
       const window = document.getElementById('br-chat-window');
       window.style.display = 'flex';
       localStorage.setItem('br_chat_open', 'true');
+      
+      // Update activity timestamp
+      this.updateLastActivity();
       
       if (!this.sessionId && this.conversationHistory.length === 0) {
         this.getOpeningMessage();
@@ -577,6 +623,9 @@
       
       this.addMessage(message, 'user');
       input.value = '';
+      
+      // Update last activity
+      this.updateLastActivity();
       
       // Show typing
       this.showTyping();
@@ -758,6 +807,7 @@
       localStorage.removeItem('br_conversation_history');
       localStorage.removeItem('br_session_id');
       localStorage.removeItem('br_chat_open');
+      localStorage.removeItem('br_last_activity');
       this.sessionId = null;
       document.getElementById('br-messages').innerHTML = '';
       this.getOpeningMessage();
