@@ -1,4 +1,4 @@
-// BoligRetning Chatbot Widget - Simplified Version
+// BoligRetning Chatbot Widget - Complete Version med Produktvisning
 (function() {
   // Inject styles
   const styles = `
@@ -228,6 +228,118 @@
     @keyframes fadeOut {
       from { opacity: 1; }
       to { opacity: 0; }
+    }
+    
+    /* PRODUKTKORT STYLING */
+    .br-products-container {
+      display: flex;
+      gap: 12px;
+      overflow-x: auto;
+      padding: 12px 0;
+      margin: 8px -18px 0 -18px;
+      padding-left: 18px;
+      padding-right: 18px;
+      scrollbar-width: thin;
+      scrollbar-color: rgba(249, 75, 0, 0.3) transparent;
+    }
+    
+    .br-products-container::-webkit-scrollbar {
+      height: 6px;
+    }
+    
+    .br-products-container::-webkit-scrollbar-track {
+      background: rgba(0, 0, 0, 0.05);
+      border-radius: 3px;
+    }
+    
+    .br-products-container::-webkit-scrollbar-thumb {
+      background: rgba(249, 75, 0, 0.3);
+      border-radius: 3px;
+    }
+    
+    .br-product-card {
+      flex: 0 0 160px;
+      background: white;
+      border-radius: 12px;
+      overflow: hidden;
+      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+      transition: all 0.3s ease;
+      cursor: pointer;
+      text-decoration: none;
+      display: block;
+    }
+    
+    .br-product-card:hover {
+      transform: translateY(-4px);
+      box-shadow: 0 4px 16px rgba(0, 0, 0, 0.12);
+    }
+    
+    .br-product-card img {
+      width: 100%;
+      height: 120px;
+      object-fit: cover;
+      background: #f5f5f5;
+    }
+    
+    .br-product-card-content {
+      padding: 12px;
+    }
+    
+    .br-product-title {
+      font-size: 13px;
+      font-weight: 600;
+      color: #242833;
+      margin: 0 0 4px 0;
+      line-height: 1.3;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      display: -webkit-box;
+      -webkit-line-clamp: 2;
+      -webkit-box-orient: vertical;
+    }
+    
+    .br-product-price {
+      font-size: 16px;
+      font-weight: 700;
+      color: #f94b00;
+      margin: 0;
+    }
+    
+    .br-product-stock {
+      font-size: 11px;
+      color: #666;
+      margin-top: 4px;
+    }
+    
+    .br-product-stock.low-stock {
+      color: #d73502;
+      font-weight: 600;
+    }
+    
+    /* Quick replies styling */
+    .br-quick-replies {
+      display: flex;
+      gap: 8px;
+      flex-wrap: wrap;
+      margin-top: 12px;
+      padding: 0 18px;
+    }
+    
+    .br-quick-reply {
+      background: white;
+      border: 1px solid #f94b00;
+      color: #f94b00;
+      padding: 8px 16px;
+      border-radius: 20px;
+      font-size: 13px;
+      cursor: pointer;
+      transition: all 0.2s ease;
+      white-space: nowrap;
+    }
+    
+    .br-quick-reply:hover {
+      background: #f94b00;
+      color: white;
     }
   `;
 
@@ -470,9 +582,6 @@
       this.showTyping();
       
       try {
-        // Build search context from conversation history
-        const searchContext = this.buildSearchContext(message);
-        
         const response = await fetch('https://kmolpuxbnonnggwphrxs.supabase.co/functions/v1/chatbot', {
           method: 'POST',
           headers: {
@@ -481,7 +590,6 @@
           },
           body: JSON.stringify({
             message: message,
-            search_context: searchContext,
             session_id: this.sessionId,
             conversation_history: this.conversationHistory.slice(-10)
           })
@@ -503,6 +611,16 @@
         
         this.addMessage(processedResponse, 'bot', true);
         
+        // Show products if any
+        if (data.products && data.products.length > 0) {
+          this.addProductCards(data.products.slice(0, 5)); // Max 5 produkter
+        }
+        
+        // Show quick replies if any
+        if (data.quick_replies && data.quick_replies.length > 0) {
+          this.addQuickReplies(data.quick_replies);
+        }
+        
       } catch (error) {
         console.error('Chat error:', error);
         this.hideTyping();
@@ -510,23 +628,84 @@
       }
     },
     
-    // Build search context from conversation
-    buildSearchContext(currentMessage) {
-      const recentContext = [];
+    // Tilføj produktkort
+    addProductCards(products) {
+      const messagesDiv = document.getElementById('br-messages');
+      const productContainer = document.createElement('div');
+      productContainer.className = 'br-message br-bot-message';
       
-      // Look back through conversation for product-related messages
-      for (let i = this.conversationHistory.length - 1; i >= 0 && recentContext.length < 3; i--) {
-        const msg = this.conversationHistory[i];
-        if (msg.role === 'user') {
-          recentContext.unshift(msg.content);
+      const productsHTML = products.map(product => {
+        // Format price
+        const price = product.price ? 
+          new Intl.NumberFormat('da-DK', { 
+            style: 'currency', 
+            currency: 'DKK',
+            minimumFractionDigits: 0,
+            maximumFractionDigits: 0
+          }).format(product.price) : 
+          'Pris ikke tilgængelig';
+        
+        // Stock status
+        let stockHTML = '';
+        if (product.stock_quantity !== undefined && product.stock_quantity !== null) {
+          if (product.stock_quantity === 0) {
+            stockHTML = '<p class="br-product-stock">Udsolgt</p>';
+          } else if (product.stock_quantity <= 3) {
+            stockHTML = `<p class="br-product-stock low-stock">Kun ${product.stock_quantity} tilbage!</p>`;
+          } else {
+            stockHTML = '<p class="br-product-stock">På lager</p>';
+          }
         }
-      }
+        
+        return `
+          <a href="${product.product_url || '#'}" target="_blank" class="br-product-card">
+            <img src="${product.image_url || 'https://via.placeholder.com/160x120?text=No+Image'}" 
+                 alt="${product.title}" 
+                 onerror="this.src='https://via.placeholder.com/160x120?text=No+Image'">
+            <div class="br-product-card-content">
+              <h4 class="br-product-title">${product.title}</h4>
+              <p class="br-product-price">${price}</p>
+              ${stockHTML}
+            </div>
+          </a>
+        `;
+      }).join('');
       
-      // Add current message
-      recentContext.push(currentMessage);
+      productContainer.innerHTML = `
+        <div class="br-bubble">
+          <div class="br-products-container">
+            ${productsHTML}
+          </div>
+        </div>
+      `;
       
-      // Join last few messages for context
-      return recentContext.slice(-3).join(' ');
+      messagesDiv.appendChild(productContainer);
+      messagesDiv.scrollTop = messagesDiv.scrollHeight;
+    },
+    
+    // Tilføj quick replies
+    addQuickReplies(replies) {
+      const messagesDiv = document.getElementById('br-messages');
+      const quickContainer = document.createElement('div');
+      quickContainer.className = 'br-quick-replies';
+      quickContainer.id = 'br-quick-replies';
+      
+      replies.forEach(reply => {
+        const button = document.createElement('button');
+        button.className = 'br-quick-reply';
+        button.textContent = reply;
+        button.onclick = () => {
+          // Send quick reply som besked
+          document.getElementById('br-input').value = reply;
+          this.sendMessage();
+          // Fjern quick replies
+          document.getElementById('br-quick-replies').remove();
+        };
+        quickContainer.appendChild(button);
+      });
+      
+      messagesDiv.appendChild(quickContainer);
+      messagesDiv.scrollTop = messagesDiv.scrollHeight;
     },
     
     addMessage(text, sender, saveToHistory = true) {
