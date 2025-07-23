@@ -408,10 +408,6 @@
     conversationHistory: [],
     wasOpen: false,
     
-    // 24-hour session expiry: All chat data is automatically cleared after 24 hours of inactivity
-    // This includes conversation history, session ID, and any stored state
-    // Last activity is updated on: init, open chat, send message
-    
     init() {
       document.getElementById('br-chat-button').onclick = () => this.toggle();
       document.getElementById('br-close').onclick = () => this.close();
