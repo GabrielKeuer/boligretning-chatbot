@@ -448,7 +448,7 @@
       if (!this.wasOpen && this.conversationHistory.length === 0) {
         setTimeout(() => {
           this.showAttentionMessage();
-        }, 10000);
+        }, 3000);
       }
       
       // Check for expiry every hour
