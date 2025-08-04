@@ -65,6 +65,7 @@
       padding: 20px;
       overflow-y: auto;
       background: white;
+      position: relative;
     }
     
     .br-input-area {
@@ -345,22 +346,37 @@
       color: white;
     }
     
-    /* Rating system styling */
-    .br-end-chat-btn {
-      background: rgba(255, 255, 255, 0.2);
-      border: 1px solid rgba(255, 255, 255, 0.3);
+    /* Floating end chat button */
+    .br-floating-end-chat {
+      position: absolute;
+      right: 20px;
+      bottom: 20px;
+      background: #dc2626;
       color: white;
-      padding: 6px 16px;
-      border-radius: 20px;
-      font-size: 12px;
+      border: none;
+      padding: 10px 20px;
+      border-radius: 25px;
+      font-size: 13px;
+      font-weight: 600;
+      box-shadow: 0 4px 12px rgba(220, 38, 38, 0.3);
       cursor: pointer;
+      z-index: 5;
       transition: all 0.2s ease;
+      display: none;
     }
     
-    .br-end-chat-btn:hover {
-      background: rgba(255, 255, 255, 0.3);
+    .br-floating-end-chat:hover {
+      background: #b91c1c;
+      transform: translateY(-2px);
+      box-shadow: 0 6px 16px rgba(220, 38, 38, 0.4);
     }
     
+    .br-floating-end-chat.show {
+      display: block;
+      animation: slideIn 0.3s ease;
+    }
+    
+    /* Rating system styling */
     .br-rating-overlay {
       position: absolute;
       top: 0;
@@ -471,20 +487,20 @@
             <h3 style="margin: 0; font-size: 18px;">BoligRetning Assistant</h3>
             <p style="margin: 0; font-size: 12px; opacity: 0.9;">Vi hjælper dig med at finde det perfekte</p>
           </div>
-          <div style="display: flex; align-items: center; gap: 8px;">
-            <button class="br-end-chat-btn" onclick="brChat.endChat()">Afslut chat</button>
-            <div id="br-close" style="cursor: pointer; padding: 8px;">
-              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2">
-                <line x1="18" y1="6" x2="6" y2="18"></line>
-                <line x1="6" y1="6" x2="18" y2="18"></line>
-              </svg>
-            </div>
+          <div id="br-close" style="cursor: pointer; padding: 8px;">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2">
+              <line x1="18" y1="6" x2="6" y2="18"></line>
+              <line x1="6" y1="6" x2="18" y2="18"></line>
+            </svg>
           </div>
         </div>
       </div>
       
       <div class="br-messages" id="br-messages">
         <!-- Messages appear here -->
+        <button class="br-floating-end-chat" id="br-floating-end-chat">
+          Afslut chat
+        </button>
       </div>
       
       <div class="br-input-area">
@@ -518,10 +534,12 @@
     interactionId: null,
     conversationHistory: [],
     wasOpen: false,
+    messageCount: 0,
     
     init() {
       document.getElementById('br-chat-button').onclick = () => this.toggle();
       document.getElementById('br-close').onclick = () => this.close();
+      document.getElementById('br-floating-end-chat').onclick = () => this.endChat();
       
       // Check if session is expired (24 hours)
       const lastActivity = localStorage.getItem('br_last_activity');
@@ -613,9 +631,12 @@ open() {
   
   // Hvis der er beskeder i history men DOM er tom, vis dem
   const messagesDiv = document.getElementById('br-messages');
-  if (messagesDiv.children.length === 0 && this.conversationHistory.length > 0) {
+  if (messagesDiv.children.length === 1 && this.conversationHistory.length > 0) { // 1 fordi floating button er der
     this.reloadMessages();
   }
+  
+  // Check om vi skal vise floating button
+  this.checkShowEndChatButton();
 },
     
     close() {
@@ -626,7 +647,10 @@ open() {
     reloadMessages() {
       // Genindlæs alle beskeder fra historik
       const messagesDiv = document.getElementById('br-messages');
+      // Gem floating button reference
+      const floatingBtn = document.getElementById('br-floating-end-chat');
       messagesDiv.innerHTML = '';
+      messagesDiv.appendChild(floatingBtn);
       
       this.conversationHistory.forEach((msg, index) => {
         if (msg.role === 'user') {
@@ -635,6 +659,8 @@ open() {
           this.addMessage(msg.content, 'bot', false);
         }
       });
+      
+      this.checkShowEndChatButton();
     },
     
     // Show attention-grabbing message
@@ -792,6 +818,7 @@ open() {
     // Tilføj produktkort
     addProductCards(products) {
       const messagesDiv = document.getElementById('br-messages');
+      const floatingBtn = document.getElementById('br-floating-end-chat');
       const productContainer = document.createElement('div');
       productContainer.className = 'br-message br-bot-message';
       
@@ -840,13 +867,14 @@ open() {
         </div>
       `;
       
-      messagesDiv.appendChild(productContainer);
+      messagesDiv.insertBefore(productContainer, floatingBtn);
       messagesDiv.scrollTop = messagesDiv.scrollHeight;
     },
     
     // Tilføj quick replies
     addQuickReplies(replies) {
       const messagesDiv = document.getElementById('br-messages');
+      const floatingBtn = document.getElementById('br-floating-end-chat');
       const quickContainer = document.createElement('div');
       quickContainer.className = 'br-quick-replies';
       quickContainer.id = 'br-quick-replies';
@@ -865,12 +893,13 @@ open() {
         quickContainer.appendChild(button);
       });
       
-      messagesDiv.appendChild(quickContainer);
+      messagesDiv.insertBefore(quickContainer, floatingBtn);
       messagesDiv.scrollTop = messagesDiv.scrollHeight;
     },
     
     addMessage(text, sender, saveToHistory = true) {
       const messagesDiv = document.getElementById('br-messages');
+      const floatingBtn = document.getElementById('br-floating-end-chat');
       const isOpen = document.getElementById('br-chat-window').style.display === 'flex';
       
       // Hvis chatten er åben, vis i DOM
@@ -887,7 +916,7 @@ open() {
           messageDiv.innerHTML = `<div class="br-bubble">${escapedText}</div>`;
         }
         
-        messagesDiv.appendChild(messageDiv);
+        messagesDiv.insertBefore(messageDiv, floatingBtn);
         messagesDiv.scrollTop = messagesDiv.scrollHeight;
       }
       
@@ -901,6 +930,20 @@ open() {
           content: originalText
         });
         localStorage.setItem('br_conversation_history', JSON.stringify(this.conversationHistory));
+        
+        // Increment message count and check if we should show end chat button
+        this.messageCount++;
+        this.checkShowEndChatButton();
+      }
+    },
+    
+    checkShowEndChatButton() {
+      const floatingBtn = document.getElementById('br-floating-end-chat');
+      const userMessages = this.conversationHistory.filter(msg => msg.role === 'user').length;
+      
+      // Vis knappen efter mindst 2 bruger beskeder
+      if (userMessages >= 2) {
+        floatingBtn.classList.add('show');
       }
     },
     
@@ -909,11 +952,12 @@ open() {
       if (!isOpen) return;
       
       const messagesDiv = document.getElementById('br-messages');
+      const floatingBtn = document.getElementById('br-floating-end-chat');
       const typingDiv = document.createElement('div');
       typingDiv.className = 'br-message br-bot-message';
       typingDiv.id = 'br-typing';
       typingDiv.innerHTML = '<div class="br-typing"><span></span><span></span><span></span></div>';
-      messagesDiv.appendChild(typingDiv);
+      messagesDiv.insertBefore(typingDiv, floatingBtn);
       messagesDiv.scrollTop = messagesDiv.scrollHeight;
     },
     
@@ -924,22 +968,24 @@ open() {
     
     resetConversation() {
       this.conversationHistory = [];
+      this.messageCount = 0;
       localStorage.removeItem('br_conversation_history');
       localStorage.removeItem('br_session_id');
       localStorage.removeItem('br_chat_open');
       localStorage.removeItem('br_last_activity');
       this.sessionId = null;
-      document.getElementById('br-messages').innerHTML = '';
+      const messagesDiv = document.getElementById('br-messages');
+      const floatingBtn = document.getElementById('br-floating-end-chat');
+      messagesDiv.innerHTML = '';
+      messagesDiv.appendChild(floatingBtn);
+      floatingBtn.classList.remove('show');
       this.getOpeningMessage();
     },
     
     endChat() {
-      // Vis kun rating hvis der har været en reel samtale
-      if (this.conversationHistory.length > 2) {
-        this.showRatingPrompt();
-      } else {
-        this.close();
-      }
+      console.log('endChat called');
+      // Vis rating prompt
+      this.showRatingPrompt();
     },
     
     showRatingPrompt() {
