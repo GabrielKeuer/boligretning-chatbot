@@ -1028,73 +1028,77 @@
       this.showRatingPrompt();
     },
     
-    showRatingPrompt() {
-      const chatWindow = document.getElementById('br-chat-window');
-      
-      const ratingOverlay = document.createElement('div');
-      ratingOverlay.className = 'br-rating-overlay';
-      ratingOverlay.id = 'br-rating-overlay';
-      
-      ratingOverlay.innerHTML = `
-        <div class="br-rating-header">
-          <h3 style="margin: 0; font-size: 20px; font-weight: 600;">BoligRetning</h3>
-          <p style="margin: 4px 0 0 0; font-size: 14px; opacity: 0.9;">Tak for din tid!</p>
+showRatingPrompt() {
+  const chatWindow = document.getElementById('br-chat-window');
+  
+  // Skjul floating button når rating vises
+  const floatingBtn = document.getElementById('br-floating-end-chat');
+  floatingBtn.style.display = 'none';
+  
+  const ratingOverlay = document.createElement('div');
+  ratingOverlay.className = 'br-rating-overlay';
+  ratingOverlay.id = 'br-rating-overlay';
+  
+  ratingOverlay.innerHTML = `
+    <div class="br-rating-header">
+      <h3 style="margin: 0; font-size: 20px; font-weight: 600;">BoligRetning</h3>
+      <p style="margin: 4px 0 0 0; font-size: 14px; opacity: 0.9;">Tak for din tid!</p>
+    </div>
+    
+    <div class="br-rating-content">
+      <div class="br-rating-container">
+        <h3 class="br-rating-title">Hvordan var din oplevelse?</h3>
+        <p class="br-rating-subtitle">Din feedback hjælper os med at blive bedre</p>
+        
+        <div class="br-rating-stars">
+          ${[1,2,3,4,5].map(i => 
+            `<span class="br-star" data-rating="${i}">⭐</span>`
+          ).join('')}
         </div>
         
-        <div class="br-rating-content">
-          <div class="br-rating-container">
-            <h3 class="br-rating-title">Hvordan var din oplevelse?</h3>
-            <p class="br-rating-subtitle">Din feedback hjælper os med at blive bedre</p>
-            
-            <div class="br-rating-stars">
-              ${[1,2,3,4,5].map(i => 
-                `<span class="br-star" data-rating="${i}">⭐</span>`
-              ).join('')}
-            </div>
-            
-            <textarea 
-              class="br-rating-comment" 
-              placeholder="Fortæl os hvad du synes (valgfrit)"
-              id="br-rating-comment"
-            ></textarea>
-            
-            <button class="br-rating-submit" id="br-rating-submit" disabled>
-              Indsend vurdering
-            </button>
-          </div>
-        </div>
-      `;
+        <textarea 
+          class="br-rating-comment" 
+          placeholder="Fortæl os hvad du synes (valgfrit)"
+          id="br-rating-comment"
+        ></textarea>
+        
+        <button class="br-rating-submit" id="br-rating-submit" disabled>
+          Indsend vurdering
+        </button>
+      </div>
+    </div>
+  `;
+  
+  chatWindow.appendChild(ratingOverlay);
+  
+  // Setup star clicking
+  let selectedRating = 0;
+  const stars = ratingOverlay.querySelectorAll('.br-star');
+  const submitBtn = document.getElementById('br-rating-submit');
+  
+  stars.forEach(star => {
+    star.addEventListener('click', () => {
+      selectedRating = parseInt(star.dataset.rating);
       
-      chatWindow.appendChild(ratingOverlay);
-      
-      // Setup star clicking
-      let selectedRating = 0;
-      const stars = ratingOverlay.querySelectorAll('.br-star');
-      const submitBtn = document.getElementById('br-rating-submit');
-      
-      stars.forEach(star => {
-        star.addEventListener('click', () => {
-          selectedRating = parseInt(star.dataset.rating);
-          
-          // Update visual state
-          stars.forEach((s, index) => {
-            if (index < selectedRating) {
-              s.classList.add('active');
-            } else {
-              s.classList.remove('active');
-            }
-          });
-          
-          // Enable submit button
-          submitBtn.disabled = false;
-        });
+      // Update visual state
+      stars.forEach((s, index) => {
+        if (index < selectedRating) {
+          s.classList.add('active');
+        } else {
+          s.classList.remove('active');
+        }
       });
       
-      // Submit handler
-      submitBtn.addEventListener('click', () => {
-        this.submitRating(selectedRating);
-      });
-    },
+      // Enable submit button
+      submitBtn.disabled = false;
+    });
+  });
+  
+  // Submit handler
+  submitBtn.addEventListener('click', () => {
+    this.submitRating(selectedRating);
+  });
+},
     
     async submitRating(rating) {
       const comment = document.getElementById('br-rating-comment').value;
