@@ -84,16 +84,18 @@
     }
     
     .br-user-message {
-      text-align: right;
-    }
+    display: flex;
+    justify-content: flex-end;
+    }  
     
     .br-user-message .br-bubble {
-      background: #f94b00;
-      color: white;
-      padding: 12px 18px;
-      border-radius: 18px 18px 4px 18px;
-      display: inline-block;
-      max-width: 80%;
+    background: #f94b00;
+    color: white;
+    padding: 12px 18px;
+    border-radius: 18px 18px 4px 18px;
+    display: inline-block;
+    max-width: 80%;
+    text-align: left;
     }
     
     .br-bot-message .br-bubble {
@@ -318,11 +320,12 @@
     
     /* Quick replies styling */
     .br-quick-replies {
-      display: flex;
-      gap: 8px;
-      flex-wrap: wrap;
-      margin-top: 12px;
-      padding: 0 18px;
+    display: flex;
+    gap: 8px;
+    flex-wrap: wrap;
+    margin-top: 12px;
+    margin-bottom: 20px;
+    padding: 0 18px;
     }
     
     .br-quick-reply {
