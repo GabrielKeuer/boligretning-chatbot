@@ -348,21 +348,30 @@
     
     /* Floating end chat button */
     .br-floating-end-chat {
-      position: absolute;
-      right: 20px;
-      bottom: 20px;
+      position: fixed;
+      top: 110px;
+      right: 40px;
       background: #dc2626;
       color: white;
       border: none;
-      padding: 10px 20px;
-      border-radius: 25px;
-      font-size: 13px;
+      padding: 8px 18px;
+      border-radius: 20px;
+      font-size: 12px;
       font-weight: 600;
       box-shadow: 0 4px 12px rgba(220, 38, 38, 0.3);
       cursor: pointer;
-      z-index: 5;
+      z-index: 10000;
       transition: all 0.2s ease;
       display: none;
+    }
+    
+    @media (max-width: 480px) {
+      .br-floating-end-chat {
+        top: 100px;
+        right: 20px;
+        font-size: 11px;
+        padding: 6px 14px;
+      }
     }
     
     .br-floating-end-chat:hover {
@@ -383,23 +392,37 @@
       left: 0;
       right: 0;
       bottom: 0;
-      background: rgba(255, 255, 255, 0.98);
-      backdrop-filter: blur(10px);
+      background: white;
+      display: flex;
+      flex-direction: column;
+      z-index: 10;
+      border-radius: 20px;
+      overflow: hidden;
+    }
+    
+    .br-rating-header {
+      background: linear-gradient(135deg, #f94b00 0%, #ff6b2b 100%);
+      padding: 20px;
+      color: white;
+      text-align: center;
+    }
+    
+    .br-rating-content {
+      flex: 1;
       display: flex;
       align-items: center;
       justify-content: center;
-      z-index: 10;
-      border-radius: 20px;
+      padding: 40px 20px;
     }
     
     .br-rating-container {
       text-align: center;
-      padding: 40px 20px;
       max-width: 300px;
+      width: 100%;
     }
     
     .br-rating-title {
-      font-size: 18px;
+      font-size: 20px;
       font-weight: 600;
       color: #242833;
       margin-bottom: 8px;
@@ -408,25 +431,29 @@
     .br-rating-subtitle {
       font-size: 14px;
       color: #666;
-      margin-bottom: 24px;
+      margin-bottom: 32px;
     }
     
     .br-rating-stars {
       display: flex;
       justify-content: center;
-      gap: 8px;
-      margin-bottom: 24px;
+      gap: 12px;
+      margin-bottom: 32px;
     }
     
     .br-star {
-      font-size: 32px;
+      font-size: 40px;
       cursor: pointer;
       transition: all 0.2s ease;
       filter: grayscale(100%);
       opacity: 0.3;
+      user-select: none;
     }
     
-    .br-star:hover,
+    .br-star:hover {
+      transform: scale(1.2);
+    }
+    
     .br-star.active {
       filter: grayscale(0%);
       opacity: 1;
@@ -441,29 +468,49 @@
       font-size: 14px;
       resize: none;
       height: 80px;
-      margin-bottom: 20px;
+      margin-bottom: 24px;
+      font-family: inherit;
+    }
+    
+    .br-rating-comment:focus {
+      outline: none;
+      border-color: #f94b00;
     }
     
     .br-rating-submit {
       background: #f94b00;
       color: white;
       border: none;
-      padding: 12px 32px;
+      padding: 14px 40px;
       border-radius: 25px;
-      font-size: 14px;
+      font-size: 15px;
       font-weight: 600;
       cursor: pointer;
       transition: all 0.2s ease;
+      width: 100%;
+      max-width: 200px;
     }
     
-    .br-rating-submit:hover {
+    .br-rating-submit:hover:not(:disabled) {
       background: #e04000;
-      transform: translateY(-1px);
+      transform: translateY(-2px);
+      box-shadow: 0 4px 12px rgba(249, 75, 0, 0.3);
     }
     
     .br-rating-submit:disabled {
       background: #ccc;
       cursor: not-allowed;
+    }
+    
+    .br-thank-you-emoji {
+      font-size: 60px;
+      margin-bottom: 20px;
+      animation: thankYouBounce 0.6s ease;
+    }
+    
+    @keyframes thankYouBounce {
+      0%, 100% { transform: scale(1); }
+      50% { transform: scale(1.2); }
     }
   `;
 
@@ -498,10 +545,11 @@
       
       <div class="br-messages" id="br-messages">
         <!-- Messages appear here -->
-        <button class="br-floating-end-chat" id="br-floating-end-chat">
-          Afslut chat
-        </button>
       </div>
+      
+      <button class="br-floating-end-chat" id="br-floating-end-chat">
+        Afslut chat
+      </button>
       
       <div class="br-input-area">
         <div style="display: flex; gap: 10px; align-items: center;">
@@ -612,32 +660,32 @@
       }
     },
     
-open() {
-  // Check if session expired before opening
-  const lastActivity = localStorage.getItem('br_last_activity');
-  const twentyFourHoursAgo = Date.now() - (24 * 60 * 60 * 1000);
-  
-  if (lastActivity && parseInt(lastActivity) < twentyFourHoursAgo) {
-    // Session expired - reset before opening
-    this.resetConversation();
-  }
-  
-  const window = document.getElementById('br-chat-window');
-  window.style.display = 'flex';
-  localStorage.setItem('br_chat_open', 'true');
-  
-  // Update activity timestamp
-  this.updateLastActivity();
-  
-  // Hvis der er beskeder i history men DOM er tom, vis dem
-  const messagesDiv = document.getElementById('br-messages');
-  if (messagesDiv.children.length === 1 && this.conversationHistory.length > 0) { // 1 fordi floating button er der
-    this.reloadMessages();
-  }
-  
-  // Check om vi skal vise floating button
-  this.checkShowEndChatButton();
-},
+    open() {
+      // Check if session expired before opening
+      const lastActivity = localStorage.getItem('br_last_activity');
+      const twentyFourHoursAgo = Date.now() - (24 * 60 * 60 * 1000);
+      
+      if (lastActivity && parseInt(lastActivity) < twentyFourHoursAgo) {
+        // Session expired - reset before opening
+        this.resetConversation();
+      }
+      
+      const window = document.getElementById('br-chat-window');
+      window.style.display = 'flex';
+      localStorage.setItem('br_chat_open', 'true');
+      
+      // Update activity timestamp
+      this.updateLastActivity();
+      
+      // Hvis der er beskeder i history men DOM er tom, vis dem
+      const messagesDiv = document.getElementById('br-messages');
+      if (messagesDiv.children.length === 0 && this.conversationHistory.length > 0) {
+        this.reloadMessages();
+      }
+      
+      // Check om vi skal vise floating button
+      this.checkShowEndChatButton();
+    },
     
     close() {
       document.getElementById('br-chat-window').style.display = 'none';
@@ -647,10 +695,7 @@ open() {
     reloadMessages() {
       // Genindlæs alle beskeder fra historik
       const messagesDiv = document.getElementById('br-messages');
-      // Gem floating button reference
-      const floatingBtn = document.getElementById('br-floating-end-chat');
       messagesDiv.innerHTML = '';
-      messagesDiv.appendChild(floatingBtn);
       
       this.conversationHistory.forEach((msg, index) => {
         if (msg.role === 'user') {
@@ -818,7 +863,6 @@ open() {
     // Tilføj produktkort
     addProductCards(products) {
       const messagesDiv = document.getElementById('br-messages');
-      const floatingBtn = document.getElementById('br-floating-end-chat');
       const productContainer = document.createElement('div');
       productContainer.className = 'br-message br-bot-message';
       
@@ -867,14 +911,13 @@ open() {
         </div>
       `;
       
-      messagesDiv.insertBefore(productContainer, floatingBtn);
+      messagesDiv.appendChild(productContainer);
       messagesDiv.scrollTop = messagesDiv.scrollHeight;
     },
     
     // Tilføj quick replies
     addQuickReplies(replies) {
       const messagesDiv = document.getElementById('br-messages');
-      const floatingBtn = document.getElementById('br-floating-end-chat');
       const quickContainer = document.createElement('div');
       quickContainer.className = 'br-quick-replies';
       quickContainer.id = 'br-quick-replies';
@@ -893,13 +936,12 @@ open() {
         quickContainer.appendChild(button);
       });
       
-      messagesDiv.insertBefore(quickContainer, floatingBtn);
+      messagesDiv.appendChild(quickContainer);
       messagesDiv.scrollTop = messagesDiv.scrollHeight;
     },
     
     addMessage(text, sender, saveToHistory = true) {
       const messagesDiv = document.getElementById('br-messages');
-      const floatingBtn = document.getElementById('br-floating-end-chat');
       const isOpen = document.getElementById('br-chat-window').style.display === 'flex';
       
       // Hvis chatten er åben, vis i DOM
@@ -916,7 +958,7 @@ open() {
           messageDiv.innerHTML = `<div class="br-bubble">${escapedText}</div>`;
         }
         
-        messagesDiv.insertBefore(messageDiv, floatingBtn);
+        messagesDiv.appendChild(messageDiv);
         messagesDiv.scrollTop = messagesDiv.scrollHeight;
       }
       
@@ -952,12 +994,11 @@ open() {
       if (!isOpen) return;
       
       const messagesDiv = document.getElementById('br-messages');
-      const floatingBtn = document.getElementById('br-floating-end-chat');
       const typingDiv = document.createElement('div');
       typingDiv.className = 'br-message br-bot-message';
       typingDiv.id = 'br-typing';
       typingDiv.innerHTML = '<div class="br-typing"><span></span><span></span><span></span></div>';
-      messagesDiv.insertBefore(typingDiv, floatingBtn);
+      messagesDiv.appendChild(typingDiv);
       messagesDiv.scrollTop = messagesDiv.scrollHeight;
     },
     
@@ -975,9 +1016,8 @@ open() {
       localStorage.removeItem('br_last_activity');
       this.sessionId = null;
       const messagesDiv = document.getElementById('br-messages');
-      const floatingBtn = document.getElementById('br-floating-end-chat');
       messagesDiv.innerHTML = '';
-      messagesDiv.appendChild(floatingBtn);
+      const floatingBtn = document.getElementById('br-floating-end-chat');
       floatingBtn.classList.remove('show');
       this.getOpeningMessage();
     },
@@ -996,25 +1036,32 @@ open() {
       ratingOverlay.id = 'br-rating-overlay';
       
       ratingOverlay.innerHTML = `
-        <div class="br-rating-container">
-          <h3 class="br-rating-title">Vurder din oplevelse</h3>
-          <p class="br-rating-subtitle">Hvordan var din chat med vores assistent?</p>
-          
-          <div class="br-rating-stars">
-            ${[1,2,3,4,5].map(i => 
-              `<span class="br-star" data-rating="${i}">⭐</span>`
-            ).join('')}
+        <div class="br-rating-header">
+          <h3 style="margin: 0; font-size: 20px; font-weight: 600;">BoligRetning</h3>
+          <p style="margin: 4px 0 0 0; font-size: 14px; opacity: 0.9;">Tak for din tid!</p>
+        </div>
+        
+        <div class="br-rating-content">
+          <div class="br-rating-container">
+            <h3 class="br-rating-title">Hvordan var din oplevelse?</h3>
+            <p class="br-rating-subtitle">Din feedback hjælper os med at blive bedre</p>
+            
+            <div class="br-rating-stars">
+              ${[1,2,3,4,5].map(i => 
+                `<span class="br-star" data-rating="${i}">⭐</span>`
+              ).join('')}
+            </div>
+            
+            <textarea 
+              class="br-rating-comment" 
+              placeholder="Fortæl os hvad du synes (valgfrit)"
+              id="br-rating-comment"
+            ></textarea>
+            
+            <button class="br-rating-submit" id="br-rating-submit" disabled>
+              Indsend vurdering
+            </button>
           </div>
-          
-          <textarea 
-            class="br-rating-comment" 
-            placeholder="Del dine tanker med os (valgfrit)"
-            id="br-rating-comment"
-          ></textarea>
-          
-          <button class="br-rating-submit" id="br-rating-submit" disabled>
-            Indsend vurdering
-          </button>
         </div>
       `;
       
@@ -1069,17 +1116,20 @@ open() {
         });
         
         // Vis tak besked
-        const overlay = document.getElementById('br-rating-overlay');
-        overlay.innerHTML = `
+        const content = document.querySelector('.br-rating-content');
+        content.innerHTML = `
           <div class="br-rating-container">
-            <h3 class="br-rating-title">Tak for din vurdering! 🙏</h3>
-            <p class="br-rating-subtitle">Din feedback hjælper os med at blive bedre.</p>
+            <div class="br-thank-you-emoji">🙏</div>
+            <h3 class="br-rating-title">Tak for din vurdering!</h3>
+            <p class="br-rating-subtitle">Vi sætter stor pris på din feedback</p>
           </div>
         `;
         
         // Luk efter 2 sekunder
         setTimeout(() => {
           this.close();
+          // Reset conversation efter rating
+          this.resetConversation();
         }, 2000);
         
       } catch (error) {
