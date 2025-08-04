@@ -483,25 +483,29 @@
       }
     },
     
-    open() {
-      // Check if session expired before opening
-      const lastActivity = localStorage.getItem('br_last_activity');
-      const twentyFourHoursAgo = Date.now() - (24 * 60 * 60 * 1000);
-      
-      if (lastActivity && parseInt(lastActivity) < twentyFourHoursAgo) {
-        // Session expired - reset before opening
-        this.resetConversation();
-      }
-      
-      const window = document.getElementById('br-chat-window');
-      window.style.display = 'flex';
-      localStorage.setItem('br_chat_open', 'true');
-      
-      // Update activity timestamp
-      this.updateLastActivity();
-      
-      // Beskeden er allerede hentet i init()
-    },
+open() {
+  // Check if session expired before opening
+  const lastActivity = localStorage.getItem('br_last_activity');
+  const twentyFourHoursAgo = Date.now() - (24 * 60 * 60 * 1000);
+  
+  if (lastActivity && parseInt(lastActivity) < twentyFourHoursAgo) {
+    // Session expired - reset before opening
+    this.resetConversation();
+  }
+  
+  const window = document.getElementById('br-chat-window');
+  window.style.display = 'flex';
+  localStorage.setItem('br_chat_open', 'true');
+  
+  // Update activity timestamp
+  this.updateLastActivity();
+  
+  // Hvis der er beskeder i history men DOM er tom, vis dem
+  const messagesDiv = document.getElementById('br-messages');
+  if (messagesDiv.children.length === 0 && this.conversationHistory.length > 0) {
+    this.reloadMessages();
+  }
+},
     
     close() {
       document.getElementById('br-chat-window').style.display = 'none';
