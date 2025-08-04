@@ -344,6 +344,111 @@
       background: #f94b00;
       color: white;
     }
+    
+    /* Rating system styling */
+    .br-end-chat-btn {
+      background: rgba(255, 255, 255, 0.2);
+      border: 1px solid rgba(255, 255, 255, 0.3);
+      color: white;
+      padding: 6px 16px;
+      border-radius: 20px;
+      font-size: 12px;
+      cursor: pointer;
+      transition: all 0.2s ease;
+    }
+    
+    .br-end-chat-btn:hover {
+      background: rgba(255, 255, 255, 0.3);
+    }
+    
+    .br-rating-overlay {
+      position: absolute;
+      top: 0;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      background: rgba(255, 255, 255, 0.98);
+      backdrop-filter: blur(10px);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      z-index: 10;
+      border-radius: 20px;
+    }
+    
+    .br-rating-container {
+      text-align: center;
+      padding: 40px 20px;
+      max-width: 300px;
+    }
+    
+    .br-rating-title {
+      font-size: 18px;
+      font-weight: 600;
+      color: #242833;
+      margin-bottom: 8px;
+    }
+    
+    .br-rating-subtitle {
+      font-size: 14px;
+      color: #666;
+      margin-bottom: 24px;
+    }
+    
+    .br-rating-stars {
+      display: flex;
+      justify-content: center;
+      gap: 8px;
+      margin-bottom: 24px;
+    }
+    
+    .br-star {
+      font-size: 32px;
+      cursor: pointer;
+      transition: all 0.2s ease;
+      filter: grayscale(100%);
+      opacity: 0.3;
+    }
+    
+    .br-star:hover,
+    .br-star.active {
+      filter: grayscale(0%);
+      opacity: 1;
+      transform: scale(1.1);
+    }
+    
+    .br-rating-comment {
+      width: 100%;
+      padding: 12px;
+      border: 1px solid #e0e0e0;
+      border-radius: 12px;
+      font-size: 14px;
+      resize: none;
+      height: 80px;
+      margin-bottom: 20px;
+    }
+    
+    .br-rating-submit {
+      background: #f94b00;
+      color: white;
+      border: none;
+      padding: 12px 32px;
+      border-radius: 25px;
+      font-size: 14px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.2s ease;
+    }
+    
+    .br-rating-submit:hover {
+      background: #e04000;
+      transform: translateY(-1px);
+    }
+    
+    .br-rating-submit:disabled {
+      background: #ccc;
+      cursor: not-allowed;
+    }
   `;
 
   // Inject styles
@@ -366,11 +471,14 @@
             <h3 style="margin: 0; font-size: 18px;">BoligRetning Assistant</h3>
             <p style="margin: 0; font-size: 12px; opacity: 0.9;">Vi hjælper dig med at finde det perfekte</p>
           </div>
-          <div id="br-close" style="cursor: pointer; padding: 8px;">
-            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2">
-              <line x1="18" y1="6" x2="6" y2="18"></line>
-              <line x1="6" y1="6" x2="18" y2="18"></line>
-            </svg>
+          <div style="display: flex; align-items: center; gap: 8px;">
+            <button class="br-end-chat-btn" onclick="brChat.endChat()">Afslut chat</button>
+            <div id="br-close" style="cursor: pointer; padding: 8px;">
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2">
+                <line x1="18" y1="6" x2="6" y2="18"></line>
+                <line x1="6" y1="6" x2="18" y2="18"></line>
+              </svg>
+            </div>
           </div>
         </div>
       </div>
@@ -823,6 +931,115 @@ open() {
       this.sessionId = null;
       document.getElementById('br-messages').innerHTML = '';
       this.getOpeningMessage();
+    },
+    
+    endChat() {
+      // Vis kun rating hvis der har været en reel samtale
+      if (this.conversationHistory.length > 2) {
+        this.showRatingPrompt();
+      } else {
+        this.close();
+      }
+    },
+    
+    showRatingPrompt() {
+      const chatWindow = document.getElementById('br-chat-window');
+      
+      const ratingOverlay = document.createElement('div');
+      ratingOverlay.className = 'br-rating-overlay';
+      ratingOverlay.id = 'br-rating-overlay';
+      
+      ratingOverlay.innerHTML = `
+        <div class="br-rating-container">
+          <h3 class="br-rating-title">Vurder din oplevelse</h3>
+          <p class="br-rating-subtitle">Hvordan var din chat med vores assistent?</p>
+          
+          <div class="br-rating-stars">
+            ${[1,2,3,4,5].map(i => 
+              `<span class="br-star" data-rating="${i}">⭐</span>`
+            ).join('')}
+          </div>
+          
+          <textarea 
+            class="br-rating-comment" 
+            placeholder="Del dine tanker med os (valgfrit)"
+            id="br-rating-comment"
+          ></textarea>
+          
+          <button class="br-rating-submit" id="br-rating-submit" disabled>
+            Indsend vurdering
+          </button>
+        </div>
+      `;
+      
+      chatWindow.appendChild(ratingOverlay);
+      
+      // Setup star clicking
+      let selectedRating = 0;
+      const stars = ratingOverlay.querySelectorAll('.br-star');
+      const submitBtn = document.getElementById('br-rating-submit');
+      
+      stars.forEach(star => {
+        star.addEventListener('click', () => {
+          selectedRating = parseInt(star.dataset.rating);
+          
+          // Update visual state
+          stars.forEach((s, index) => {
+            if (index < selectedRating) {
+              s.classList.add('active');
+            } else {
+              s.classList.remove('active');
+            }
+          });
+          
+          // Enable submit button
+          submitBtn.disabled = false;
+        });
+      });
+      
+      // Submit handler
+      submitBtn.addEventListener('click', () => {
+        this.submitRating(selectedRating);
+      });
+    },
+    
+    async submitRating(rating) {
+      const comment = document.getElementById('br-rating-comment').value;
+      
+      try {
+        // Send rating til Supabase
+        const response = await fetch('https://kmolpuxbnonnggwphrxs.supabase.co/functions/v1/chatbot', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'Authorization': 'Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imttb2xwdXhibm9ubmdnd3BocnhzIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDk5MDM4NjAsImV4cCI6MjA2NTQ3OTg2MH0.SMdQKI_ISIWb89WRJ79k1jB9OvjEXVgnLJKaoKkAUCg'
+          },
+          body: JSON.stringify({
+            session_id: this.sessionId,
+            rating: rating,
+            comment: comment,
+            is_rating: true
+          })
+        });
+        
+        // Vis tak besked
+        const overlay = document.getElementById('br-rating-overlay');
+        overlay.innerHTML = `
+          <div class="br-rating-container">
+            <h3 class="br-rating-title">Tak for din vurdering! 🙏</h3>
+            <p class="br-rating-subtitle">Din feedback hjælper os med at blive bedre.</p>
+          </div>
+        `;
+        
+        // Luk efter 2 sekunder
+        setTimeout(() => {
+          this.close();
+        }, 2000);
+        
+      } catch (error) {
+        console.error('Error submitting rating:', error);
+        this.close();
+      }
     }
   };
 
