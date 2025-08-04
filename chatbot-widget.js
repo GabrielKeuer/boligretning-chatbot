@@ -432,6 +432,11 @@
       // Update last activity
       this.updateLastActivity();
       
+      // Hvis ny session - hent opening message MED DET SAMME
+      if (!this.sessionId || this.conversationHistory.length === 0) {
+        this.getOpeningMessage();
+      }
+      
       // Check om chatten var åben før navigation
       this.wasOpen = localStorage.getItem('br_chat_open') === 'true';
       
@@ -444,8 +449,8 @@
         }, 500);
       }
       
-      // Show attention message after 10 seconds
-      if (!this.wasOpen && this.conversationHistory.length === 0) {
+      // Show attention message after 5 seconds
+      if (!this.wasOpen) {
         setTimeout(() => {
           this.showAttentionMessage();
         }, 5000);
@@ -495,9 +500,7 @@
       // Update activity timestamp
       this.updateLastActivity();
       
-      if (!this.sessionId && this.conversationHistory.length === 0) {
-        this.getOpeningMessage();
-      }
+      // Beskeden er allerede hentet i init()
     },
     
     close() {
@@ -521,71 +524,61 @@
     
     // Show attention-grabbing message
     showAttentionMessage() {
+      // Tjek om vi har en besked i history
+      if (this.conversationHistory.length === 0) return;
+      
+      // Find første bot besked
+      const firstBotMessage = this.conversationHistory.find(msg => msg.role === 'assistant');
+      if (!firstBotMessage) return;
+      
       const attentionDiv = document.createElement('div');
       attentionDiv.id = 'br-attention-message';
       
-      // Get opening message from Supabase
-      this.getOpeningPreview().then(message => {
-        attentionDiv.innerHTML = `
-          <div style="display: flex; align-items: flex-start; gap: 12px;">
-            <div style="flex-shrink: 0; width: 40px; height: 40px; background: #f94b00; border-radius: 50%; display: flex; align-items: center; justify-content: center;">
-              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2">
-                <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"></path>
-              </svg>
-            </div>
-            <div style="flex: 1;">
-              <p style="margin: 0; color: #242833; font-size: 14px; line-height: 1.4;">${message}</p>
-              <p style="margin: 4px 0 0 0; color: #666; font-size: 12px;">Klik for at chatte</p>
-            </div>
-            <button style="background: none; border: none; padding: 0; margin: -8px -12px 0 0; cursor: pointer; color: #999;" onclick="document.getElementById('br-attention-message').remove()">
-              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                <line x1="18" y1="6" x2="6" y2="18"></line>
-                <line x1="6" y1="6" x2="18" y2="18"></line>
-              </svg>
-            </button>
+      attentionDiv.innerHTML = `
+        <div style="display: flex; align-items: flex-start; gap: 12px;">
+          <div style="flex-shrink: 0; width: 40px; height: 40px; background: #f94b00; border-radius: 50%; display: flex; align-items: center; justify-content: center;">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2">
+              <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"></path>
+            </svg>
           </div>
-        `;
-        
-        // Click handler
-        attentionDiv.onclick = (e) => {
-          if (!e.target.closest('button')) {
-            this.open();
-            attentionDiv.remove();
-          }
-        };
-        
-        document.body.appendChild(attentionDiv);
-        
-        // Auto-remove after 15 seconds
-        setTimeout(() => {
-          if (document.getElementById('br-attention-message')) {
-            attentionDiv.style.animation = 'fadeOut 0.3s ease-out';
-            setTimeout(() => attentionDiv.remove(), 300);
-          }
-        }, 15000);
-      });
-    },
-    
-    async getOpeningPreview() {
-      try {
-        const response = await fetch('https://kmolpuxbnonnggwphrxs.supabase.co/functions/v1/chatbot', {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-            'Authorization': 'Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imttb2xwdXhibm9ubmdnd3BocnhzIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDk5MDM4NjAsImV4cCI6MjA2NTQ3OTg2MH0.SMdQKI_ISIWb89WRJ79k1jB9OvjEXVgnLJKaoKkAUCg'
-          },
-          body: JSON.stringify({ is_opening_preview: true })
-        });
-        
-        const data = await response.json();
-        return data.preview || 'Hej! Kan jeg hjælpe dig med at finde noget specifikt? 🛋️';
-      } catch (error) {
-        return 'Hej! Kan jeg hjælpe dig med at finde noget specifikt? 🛋️';
-      }
+          <div style="flex: 1;">
+            <p style="margin: 0; color: #242833; font-size: 14px; line-height: 1.4;">${firstBotMessage.content}</p>
+            <p style="margin: 4px 0 0 0; color: #666; font-size: 12px;">Klik for at chatte</p>
+          </div>
+          <button style="background: none; border: none; padding: 0; margin: -8px -12px 0 0; cursor: pointer; color: #999;" onclick="document.getElementById('br-attention-message').remove()">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <line x1="18" y1="6" x2="6" y2="18"></line>
+              <line x1="6" y1="6" x2="18" y2="18"></line>
+            </svg>
+          </button>
+        </div>
+      `;
+      
+      // Click handler
+      attentionDiv.onclick = (e) => {
+        if (!e.target.closest('button')) {
+          this.open();
+          attentionDiv.remove();
+        }
+      };
+      
+      document.body.appendChild(attentionDiv);
+      
+      // Auto-remove after 15 seconds
+      setTimeout(() => {
+        if (document.getElementById('br-attention-message')) {
+          attentionDiv.style.animation = 'fadeOut 0.3s ease-out';
+          setTimeout(() => attentionDiv.remove(), 300);
+        }
+      }, 15000);
     },
     
     async getOpeningMessage() {
-      this.showTyping();
+      const isOpen = document.getElementById('br-chat-window').style.display === 'flex';
+      
+      if (isOpen) {
+        this.showTyping();
+      }
       
       try {
         const response = await fetch('https://kmolpuxbnonnggwphrxs.supabase.co/functions/v1/chatbot', {
@@ -594,7 +587,10 @@
             'Content-Type': 'application/json',
             'Authorization': 'Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imttb2xwdXhibm9ubmdnd3BocnhzIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDk5MDM4NjAsImV4cCI6MjA2NTQ3OTg2MH0.SMdQKI_ISIWb89WRJ79k1jB9OvjEXVgnLJKaoKkAUCg'
           },
-          body: JSON.stringify({ is_opening_request: true })
+          body: JSON.stringify({ 
+            is_opening_request: true,
+            session_id: this.sessionId
+          })
         });
         
         const data = await response.json();
@@ -602,11 +598,16 @@
         this.interactionId = data.interaction_id;
         localStorage.setItem('br_session_id', this.sessionId);
         
-        this.hideTyping();
+        if (isOpen) {
+          this.hideTyping();
+        }
+        
         this.addMessage(data.response || 'Hej! Jeg er her for at hjælpe dig med at finde de perfekte møbler. Hvad leder du efter i dag?', 'bot');
         
       } catch (error) {
-        this.hideTyping();
+        if (isOpen) {
+          this.hideTyping();
+        }
         this.addMessage('Hej! Jeg er her for at hjælpe dig med at finde de perfekte møbler. Hvad leder du efter i dag?', 'bot');
       }
     },
@@ -755,22 +756,27 @@
     
     addMessage(text, sender, saveToHistory = true) {
       const messagesDiv = document.getElementById('br-messages');
-      const messageDiv = document.createElement('div');
-      messageDiv.className = `br-message br-${sender}-message`;
+      const isOpen = document.getElementById('br-chat-window').style.display === 'flex';
       
-      // For bot messages, allow HTML (for links)
-      if (sender === 'bot') {
-        messageDiv.innerHTML = `<div class="br-bubble">${text}</div>`;
-      } else {
-        // For user messages, escape HTML
-        const escapedText = text.replace(/</g, '&lt;').replace(/>/g, '&gt;');
-        messageDiv.innerHTML = `<div class="br-bubble">${escapedText}</div>`;
+      // Hvis chatten er åben, vis i DOM
+      if (isOpen) {
+        const messageDiv = document.createElement('div');
+        messageDiv.className = `br-message br-${sender}-message`;
+        
+        // For bot messages, allow HTML (for links)
+        if (sender === 'bot') {
+          messageDiv.innerHTML = `<div class="br-bubble">${text}</div>`;
+        } else {
+          // For user messages, escape HTML
+          const escapedText = text.replace(/</g, '&lt;').replace(/>/g, '&gt;');
+          messageDiv.innerHTML = `<div class="br-bubble">${escapedText}</div>`;
+        }
+        
+        messagesDiv.appendChild(messageDiv);
+        messagesDiv.scrollTop = messagesDiv.scrollHeight;
       }
       
-      messagesDiv.appendChild(messageDiv);
-      messagesDiv.scrollTop = messagesDiv.scrollHeight;
-      
-      // Save to history if new
+      // Save to history if new (uanset om chat er åben)
       if (saveToHistory) {
         // Store the original text without HTML processing for history
         const originalText = text.replace(/<a[^>]*href="([^"]*)"[^>]*>([^<]*)<\/a>/g, '[$2]($1)');
@@ -784,6 +790,9 @@
     },
     
     showTyping() {
+      const isOpen = document.getElementById('br-chat-window').style.display === 'flex';
+      if (!isOpen) return;
+      
       const messagesDiv = document.getElementById('br-messages');
       const typingDiv = document.createElement('div');
       typingDiv.className = 'br-message br-bot-message';
