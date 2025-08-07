@@ -600,6 +600,10 @@
       } else {
         // Get existing session and conversation history
         this.sessionId = localStorage.getItem('br_session_id');
+        // Set cookie if we have a session
+        if (this.sessionId) {
+          document.cookie = `br_session_id=${this.sessionId}; path=/; max-age=86400`;
+        }
         const savedHistory = localStorage.getItem('br_conversation_history');
         if (savedHistory) {
           this.conversationHistory = JSON.parse(savedHistory);
@@ -783,6 +787,8 @@
         this.sessionId = data.session_id;
         this.interactionId = data.interaction_id;
         localStorage.setItem('br_session_id', this.sessionId);
+        // Set cookie when we get new session
+        document.cookie = `br_session_id=${this.sessionId}; path=/; max-age=86400`;
         
         if (isOpen) {
           this.hideTyping();
@@ -829,6 +835,8 @@
         
         const data = await response.json();
         this.interactionId = data.interaction_id;
+        // Update cookie to refresh expiry
+        document.cookie = `br_session_id=${this.sessionId}; path=/; max-age=86400`;
         
         this.hideTyping();
         
