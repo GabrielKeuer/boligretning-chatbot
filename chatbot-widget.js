@@ -860,7 +860,7 @@
       }
     },
     
-    // Tilføj produktkort
+   // Tilføj produktkort
     addProductCards(products) {
       const messagesDiv = document.getElementById('br-messages');
       const productContainer = document.createElement('div');
@@ -890,7 +890,10 @@
         }
         
         return `
-          <a href="${product.product_url || '#'}" target="_blank" class="br-product-card">
+          <a href="${product.product_url || '#'}" 
+             target="_blank" 
+             class="br-product-card"
+             onclick="brChat.trackProductClick('${product.id}', '${product.title.replace(/'/g, "\\'")}'); return true;">
             <img src="${product.image_url || 'https://via.placeholder.com/160x120?text=No+Image'}" 
                  alt="${product.title}" 
                  onerror="this.src='https://via.placeholder.com/160x120?text=No+Image'">
@@ -1026,6 +1029,32 @@
       console.log('endChat called');
       // Vis rating prompt
       this.showRatingPrompt();
+    },
+    
+    async trackProductClick(productId, productTitle) {
+      try {
+        await fetch('https://kmolpuxbnonnggwphrxs.supabase.co/functions/v1/chatbot', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'Authorization': 'Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imttb2xwdXhibm9ubmdnd3BocnhzIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDk5MDM4NjAsImV4cCI6MjA2NTQ3OTg2MH0.SMdQKI_ISIWb89WRJ79k1jB9OvjEXVgnLJKaoKkAUCg'
+          },
+          body: JSON.stringify({
+            track_event: true,
+            session_id: this.sessionId,
+            product_id: productId,
+            action: 'clicked',
+            source: 'chatbot',
+            metadata: {
+              product_title: productTitle,
+              timestamp: new Date().toISOString()
+            }
+          })
+        });
+        console.log(`Tracked click on product: ${productTitle}`);
+      } catch (error) {
+        console.error('Failed to track product click:', error);
+      }
     },
     
 showRatingPrompt() {
