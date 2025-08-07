@@ -706,6 +706,14 @@
           this.addMessage(msg.content, 'user', false);
         } else {
           this.addMessage(msg.content, 'bot', false);
+          // Produkter skal altid vises
+          if (msg.products && msg.products.length > 0) {
+            this.addProductCards(msg.products);
+          }
+          // Quick replies kun hvis det er sidste besked
+          if (msg.quick_replies && msg.quick_replies.length > 0 && index === this.conversationHistory.length - 1) {
+            this.addQuickReplies(msg.quick_replies);
+          }
         }
       });
       
@@ -851,14 +859,20 @@
         
         this.addMessage(processedResponse, 'bot', true);
         
-        // Show products if any
+        // Show products if any and save them to conversation history
         if (data.products && data.products.length > 0) {
           this.addProductCards(data.products.slice(0, 5)); // Max 5 produkter
+          // Gem produkter i den sidste bot besked
+          this.conversationHistory[this.conversationHistory.length - 1].products = data.products.slice(0, 5);
+          localStorage.setItem('br_conversation_history', JSON.stringify(this.conversationHistory));
         }
         
-        // Show quick replies if any
+        // Show quick replies if any and save them
         if (data.quick_replies && data.quick_replies.length > 0) {
           this.addQuickReplies(data.quick_replies);
+          // Gem quick replies i den sidste bot besked
+          this.conversationHistory[this.conversationHistory.length - 1].quick_replies = data.quick_replies;
+          localStorage.setItem('br_conversation_history', JSON.stringify(this.conversationHistory));
         }
         
       } catch (error) {
