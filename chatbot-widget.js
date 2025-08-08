@@ -639,7 +639,7 @@
       this.updateLastActivity();
       
       // Hvis ny session - hent opening message MED DET SAMME
-      if (!this.sessionId) {
+      if (!this.sessionId || this.conversationHistory.length === 0) {
         this.getOpeningMessage();
       }
       
@@ -766,12 +766,18 @@
     
     // Show attention-grabbing message
     showAttentionMessage() {
+      // Tjek om vi allerede har vist attention message i denne session
+      if (localStorage.getItem('br_attention_shown') === 'true') return;
+      
       // Tjek om vi har en besked i history
       if (this.conversationHistory.length === 0) return;
       
       // Find første bot besked
       const firstBotMessage = this.conversationHistory.find(msg => msg.role === 'assistant');
       if (!firstBotMessage) return;
+      
+      // Marker at vi har vist attention message
+      localStorage.setItem('br_attention_shown', 'true');
       
       const attentionDiv = document.createElement('div');
       attentionDiv.id = 'br-attention-message';
@@ -1094,6 +1100,7 @@
       localStorage.removeItem('br_session_id');
       localStorage.removeItem('br_chat_open');
       localStorage.removeItem('br_last_activity');
+      localStorage.removeItem('br_attention_shown');
       this.sessionId = null;
       const messagesDiv = document.getElementById('br-messages');
       messagesDiv.innerHTML = '';
