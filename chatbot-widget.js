@@ -1092,7 +1092,9 @@ showRatingPrompt() {
   
   ratingOverlay.innerHTML = `
     <div class="br-rating-header">
-      <h3 style="margin: 0; font-size: 20px; font-weight: 600;">BoligRetning</h3>
+      <h3 style="margin: 0; font-size: 20px; font-weight: 600;">
+  <span style="color: white;">Bolig</span><span style="color: #f94b00;">Retning</span>
+</h3>
       <p style="margin: 4px 0 0 0; font-size: 14px; opacity: 0.9;">Tak for din tid!</p>
     </div>
     
