@@ -531,8 +531,8 @@
       <div class="br-header">
         <div style="display: flex; justify-content: space-between; align-items: center;">
           <div>
-            <h3 style="margin: 0; font-size: 18px; font-weight: 700; color: white;">Aisha</h3>
-            <p style="margin: 0; font-size: 12px; opacity: 0.9;">AI Assistent (Beta) • Produktsøgning & Kundeservice</p>
+            <h3 style="margin: 0; font-size: 18px; font-weight: 700; color: white;">AI Assistent (Beta)</h3>
+            <p style="margin: 0; font-size: 12px; opacity: 0.9;">Produktsøgning & Kundeservice</p>
           </div>
           <div id="br-close" style="cursor: pointer; padding: 8px;">
             <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2">
