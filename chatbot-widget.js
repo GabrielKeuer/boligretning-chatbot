@@ -1,7 +1,7 @@
 // BoligRetning Chatbot Widget - Complete Version med Produktvisning
 (function() {
   // Inject styles
-  const styles = `
+ const styles = `
     /* Glassmorphism Chat Widget */
     #br-chat-button {
       position: fixed;
@@ -9,20 +9,20 @@
       right: 20px;
       width: 60px;
       height: 60px;
-      background: #f94b00;
+      background: #242833;
       border-radius: 30px;
       display: flex;
       align-items: center;
       justify-content: center;
       cursor: pointer;
-      box-shadow: 0 8px 32px rgba(249, 75, 0, 0.3);
+      box-shadow: 0 8px 32px rgba(36, 40, 51, 0.3);
       transition: all 0.3s ease;
       z-index: 9999;
     }
     
     #br-chat-button:hover {
       transform: scale(1.1);
-      box-shadow: 0 12px 40px rgba(249, 75, 0, 0.4);
+      box-shadow: 0 12px 40px rgba(36, 40, 51, 0.4);
     }
     
     #br-chat-window {
@@ -55,7 +55,7 @@
     }
     
     .br-header {
-      background: linear-gradient(135deg, #f94b00 0%, #ff6b2b 100%);
+      background: linear-gradient(135deg, #242833 0%, #3a4049 100%);
       padding: 20px;
       color: white;
     }
@@ -90,7 +90,7 @@
     }  
     
     .br-user-message .br-bubble {
-    background: #f94b00;
+    background: #242833;
     color: white;
     padding: 12px 18px;
     border-radius: 18px 18px 4px 18px;
@@ -111,7 +111,7 @@
     
     /* Styling for links in bot messages */
     .br-bot-message .br-bubble a {
-      color: #f94b00;
+      color: #242833;
       font-weight: 600;
       text-decoration: none;
       border-bottom: 1px solid transparent;
@@ -119,7 +119,7 @@
     }
     
     .br-bot-message .br-bubble a:hover {
-      border-bottom-color: #f94b00;
+      border-bottom-color: #242833;
     }
     
     /* Mindre tekst på desktop */
@@ -147,7 +147,7 @@
     }
     
     .br-input:focus {
-      border-color: #f94b00;
+      border-color: #242833;
       background: white;
     }
     
@@ -156,7 +156,7 @@
     }
     
     #br-send-btn {
-      background: #f94b00;
+      background: #242833;
       border: none;
       border-radius: 50%;
       width: 40px;
@@ -170,7 +170,7 @@
     }
     
     #br-send-btn:hover {
-      background: #e04000;
+      background: #1a1d24;
       transform: scale(1.05);
     }
     
@@ -186,7 +186,7 @@
       width: 8px;
       height: 8px;
       border-radius: 50%;
-      background: #f94b00;
+      background: #242833;
       margin: 0 2px;
       animation: bounce 1.4s infinite ease-in-out both;
     }
@@ -243,7 +243,7 @@
       padding-left: 18px;
       padding-right: 18px;
       scrollbar-width: thin;
-      scrollbar-color: rgba(249, 75, 0, 0.3) transparent;
+      scrollbar-color: rgba(36, 40, 51, 0.3) transparent;
     }
     
     .br-products-container::-webkit-scrollbar {
@@ -256,7 +256,7 @@
     }
     
     .br-products-container::-webkit-scrollbar-thumb {
-      background: rgba(249, 75, 0, 0.3);
+      background: rgba(36, 40, 51, 0.3);
       border-radius: 3px;
     }
     
@@ -331,8 +331,8 @@
     
     .br-quick-reply {
       background: white;
-      border: 1px solid #f94b00;
-      color: #f94b00;
+      border: 1px solid #242833;
+      color: #242833;
       padding: 8px 16px;
       border-radius: 20px;
       font-size: 13px;
@@ -342,7 +342,7 @@
     }
     
     .br-quick-reply:hover {
-      background: #f94b00;
+      background: #242833;
       color: white;
     }
     
@@ -401,7 +401,7 @@
     }
     
     .br-rating-header {
-      background: linear-gradient(135deg, #f94b00 0%, #ff6b2b 100%);
+      background: linear-gradient(135deg, #242833 0%, #3a4049 100%);
       padding: 20px;
       color: white;
       text-align: center;
@@ -474,11 +474,11 @@
     
     .br-rating-comment:focus {
       outline: none;
-      border-color: #f94b00;
+      border-color: #242833;
     }
     
     .br-rating-submit {
-      background: #f94b00;
+      background: #242833;
       color: white;
       border: none;
       padding: 14px 40px;
@@ -492,9 +492,9 @@
     }
     
     .br-rating-submit:hover:not(:disabled) {
-      background: #e04000;
+      background: #1a1d24;
       transform: translateY(-2px);
-      box-shadow: 0 4px 12px rgba(249, 75, 0, 0.3);
+      box-shadow: 0 4px 12px rgba(36, 40, 51, 0.3);
     }
     
     .br-rating-submit:disabled {
@@ -734,7 +734,7 @@
       
       attentionDiv.innerHTML = `
         <div style="display: flex; align-items: flex-start; gap: 12px;">
-          <div style="flex-shrink: 0; width: 40px; height: 40px; background: #f94b00; border-radius: 50%; display: flex; align-items: center; justify-content: center;">
+          <div style="flex-shrink: 0; width: 40px; height: 40px; background: #242833; border-radius: 50%; display: flex; align-items: center; justify-content: center;">
             <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2">
               <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"></path>
             </svg>
