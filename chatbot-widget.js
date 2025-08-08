@@ -70,6 +70,11 @@
         background: white;
         padding-bottom: env(safe-area-inset-bottom, 0);
       }
+      
+      /* Skjul chat button når chat er åben på mobil */
+      body.br-chat-open #br-chat-button {
+        display: none;
+      }
     }
     
     .br-header {
@@ -639,8 +644,8 @@
       // Check om chatten var åben før navigation
       this.wasOpen = localStorage.getItem('br_chat_open') === 'true';
       
-      // Genåbn chat hvis den var åben
-      if (this.wasOpen) {
+      // Genåbn chat hvis den var åben - KUN PÅ DESKTOP
+      if (this.wasOpen && window.innerWidth > 480) {
         setTimeout(() => {
           this.open();
           // Genindlæs beskeder
@@ -697,7 +702,16 @@
       
       const window = document.getElementById('br-chat-window');
       window.style.display = 'flex';
-      localStorage.setItem('br_chat_open', 'true');
+      
+      // Gem kun at chatten er åben på desktop
+      if (window.innerWidth > 480) {
+        localStorage.setItem('br_chat_open', 'true');
+      }
+      
+      // Tilføj class til body på mobil
+      if (window.innerWidth <= 480) {
+        document.body.classList.add('br-chat-open');
+      }
       
       // Update activity timestamp
       this.updateLastActivity();
@@ -714,7 +728,14 @@
     
     close() {
       document.getElementById('br-chat-window').style.display = 'none';
-      localStorage.setItem('br_chat_open', 'false');
+      document.body.classList.remove('br-chat-open'); // Fjern class
+      
+      // På mobil, slet altid chat open status
+      if (window.innerWidth <= 480) {
+        localStorage.removeItem('br_chat_open');
+      } else {
+        localStorage.setItem('br_chat_open', 'false');
+      }
     },
     
     reloadMessages() {
