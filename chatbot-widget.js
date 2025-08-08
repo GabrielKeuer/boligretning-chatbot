@@ -531,8 +531,8 @@
       <div class="br-header">
         <div style="display: flex; justify-content: space-between; align-items: center;">
           <div>
-            <h3 style="margin: 0; font-size: 18px;">BoligRetning Assistant</h3>
-            <p style="margin: 0; font-size: 12px; opacity: 0.9;">Vi hjælper dig med at finde det perfekte</p>
+            <h3 style="margin: 0; font-size: 18px;">Aisha</h3>
+            <p style="margin: 0; font-size: 12px; opacity: 0.9;">Produktsøgning & Kundeservice</p>
           </div>
           <div id="br-close" style="cursor: pointer; padding: 8px;">
             <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2">
