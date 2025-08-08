@@ -639,7 +639,7 @@
       this.updateLastActivity();
       
       // Hvis ny session - hent opening message MED DET SAMME
-      if (!this.sessionId || this.conversationHistory.length === 0) {
+      if (!this.sessionId) {
         this.getOpeningMessage();
       }
       
