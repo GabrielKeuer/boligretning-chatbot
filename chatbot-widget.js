@@ -20,6 +20,13 @@
       z-index: 9999;
     }
     
+    /* Skjul chat button når chat er åben på mobil */
+    @media (max-width: 480px) {
+      body.br-chat-open #br-chat-button {
+        display: none !important;
+      }
+    }
+    
     #br-chat-button:hover {
       transform: scale(1.1);
       box-shadow: 0 12px 40px rgba(36, 40, 51, 0.4);
@@ -69,11 +76,6 @@
         bottom: 0;
         background: white;
         padding-bottom: env(safe-area-inset-bottom, 0);
-      }
-      
-      /* Skjul chat button når chat er åben på mobil */
-      body.br-chat-open #br-chat-button {
-        display: none;
       }
     }
     
@@ -700,8 +702,8 @@
         this.resetConversation();
       }
       
-      const window = document.getElementById('br-chat-window');
-      window.style.display = 'flex';
+      const chatWindow = document.getElementById('br-chat-window');
+      chatWindow.style.display = 'flex';
       
       // Gem kun at chatten er åben på desktop
       if (window.innerWidth > 480) {
