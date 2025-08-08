@@ -46,11 +46,29 @@
     /* Mobile responsive */
     @media (max-width: 480px) {
       #br-chat-window {
-        width: calc(100% - 20px);
-        height: calc(100vh - 100px);
-        max-width: 400px;
-        left: 10px;
-        right: 10px;
+        position: fixed;
+        bottom: 0;
+        left: 0;
+        right: 0;
+        top: 0;
+        width: 100%;
+        height: 100%;
+        max-width: none;
+        border-radius: 0;
+      }
+      
+      .br-messages {
+        flex: 1;
+        overflow-y: auto;
+        -webkit-overflow-scrolling: touch;
+        padding-bottom: 10px;
+      }
+      
+      .br-input-area {
+        position: sticky;
+        bottom: 0;
+        background: white;
+        padding-bottom: env(safe-area-inset-bottom, 0);
       }
     }
     
@@ -649,6 +667,9 @@
           }
         }
       }, 60 * 60 * 1000); // Check every hour
+      
+      // Setup mobile keyboard fix
+      this.setupMobileKeyboardFix();
     },
     
     updateLastActivity() {
@@ -1002,6 +1023,17 @@
         this.messageCount++;
         this.checkShowEndChatButton();
       }
+    },
+    
+    // FIX FOR MOBILE KEYBOARD
+    setupMobileKeyboardFix() {
+      const input = document.getElementById('br-input');
+      input.addEventListener('focus', () => {
+        setTimeout(() => {
+          const messages = document.getElementById('br-messages');
+          messages.scrollTop = messages.scrollHeight;
+        }, 300);
+      });
     },
     
     checkShowEndChatButton() {
